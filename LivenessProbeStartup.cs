@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
+
 using SampleApp.Services;
 
 namespace SampleApp
@@ -48,16 +53,6 @@ namespace SampleApp
                 options.Period = TimeSpan.FromSeconds(2);
                 options.Predicate = (check) => check.Tags.Contains("ready");
             });
-
-            // The following workaround permits adding an IHealthCheckPublisher 
-            // instance to the service container when one or more other hosted 
-            // services have already been added to the app. This workaround
-            // won't be required with the release of ASP.NET Core 3.0. For more 
-            // information, see: https://github.com/aspnet/Extensions/issues/639.
-            services.TryAddEnumerable(
-                ServiceDescriptor.Singleton(typeof(IHostedService), 
-                    typeof(HealthCheckPublisherOptions).Assembly
-                        .GetType(HealthCheckServiceAssembly)));
 
             services.AddSingleton<IHealthCheckPublisher, ReadinessPublisher>();
         }

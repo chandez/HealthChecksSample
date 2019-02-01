@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using Microsoft.Extensions.Options;
+
 namespace SampleApp
 {
     #region snippet_ReadinessPublisher
@@ -12,7 +14,7 @@ namespace SampleApp
     {
         private readonly ILogger _logger;
 
-        public ReadinessPublisher(ILogger<ReadinessPublisher> logger)
+        public ReadinessPublisher(ILogger<ReadinessPublisher> logger, IOptions<HealthCheckPublisherOptions> HealthCheckPublisherOptions)
         {
             _logger = logger;
         }

@@ -1,9 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Hosting;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+
+using Microsoft.AspNetCore.Hosting;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore;
+
+
+using Microsoft.Extensions.Hosting;
+
 
 namespace SampleApp
 {
@@ -21,42 +30,45 @@ namespace SampleApp
                 { "liveness", typeof(LivenessProbeStartup) },
                 { "writer", typeof(CustomWriterStartup) },
                 { "port", typeof(ManagementPortStartup) },
-                
             };
         }
 
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            CreateHostBuilder(args).Build().Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            var config = new ConfigurationBuilder()
+            var appConfig = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .AddCommandLine(args)
                 .Build();
 
-            var scenario = config["scenario"] ?? "basic";
+            var scenario = appConfig["scenario"] ?? "basic";
 
             if (!_scenarios.TryGetValue(scenario, out var startupType))
             {
                 startupType = typeof(BasicStartup);
             }
 
-            return new WebHostBuilder()
-                .UseConfiguration(config)
+            return new HostBuilder()
+                .ConfigureHostConfiguration(configHost =>
+                {
+                    configHost.AddConfiguration(appConfig);
+                })
                 .ConfigureLogging(builder =>
                 {
                     builder.SetMinimumLevel(LogLevel.Trace);
-                    builder.AddConfiguration(config);
+                    builder.AddConfiguration(appConfig);
                     builder.AddConsole();
                 })
-                .UseKestrel()
-                .UseStartup(startupType)
-                .Build();
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup(startupType);
+                });
         }
     }
 }
